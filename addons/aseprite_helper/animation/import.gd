@@ -30,6 +30,8 @@ func convert_resource(source_file: String, global_file: String, options: Diction
 	player.name = "Player"
 	sprite.add_child(player)
 	player.owner = sprite
+	
+	var anim_lib = AnimationLibrary.new()
 
 	for animation in data.animations:
 		var a := Animation.new()
@@ -49,7 +51,9 @@ func convert_resource(source_file: String, global_file: String, options: Diction
 			a.track_insert_key(idx, time, Vector2i(frame.x, frame.y))
 			time += frame.duration
 		a.length = time
-		player.add_animation(animation.name, a)
+		anim_lib.add_animation(animation.name, a)
+	
+	player.add_animation_library("", anim_lib)
 	player.current_animation = player.get_animation_list()[0]
 
 	var packed_scene = PackedScene.new()

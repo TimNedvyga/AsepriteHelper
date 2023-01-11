@@ -44,7 +44,7 @@ func _import(source_file: String, save_path: String, options: Dictionary, platfo
 	var res := convert_resource(source_file, global_file, options)
 	if res == null:
 		return FAILED
-	return ResourceSaver.save(save_path + "." + _get_save_extension(), res)
+	return ResourceSaver.save(res, save_path + "." + _get_save_extension())
 
 func convert_resource(source_file: String, global_file: String, options: Dictionary) -> Resource: return null
 
@@ -79,23 +79,20 @@ func convert_file(ase_path: String, global_path: String) -> Dictionary:
 		#file to open
 		global_path,
 	])
-	var file := File.new()
-
-	file.open(data_path, File.READ)
+	
+	var file = FileAccess.open(data_path, FileAccess.READ)
 	var json := JSON.new()
 	json.parse(file.get_as_text())
 	var data := json.get_data() as Dictionary
-	file.close()
+	file = null
 
-	file.open(sheet_path, File.READ)
+	file = FileAccess.open(sheet_path, FileAccess.READ)
 	var img := Image.new()
 	img.load_png_from_buffer(file.get_buffer(file.get_length()))
-	var atlas := ImageTexture.new()
-	atlas.create_from_image(img)
-	file.close()
+	var atlas = ImageTexture.create_from_image(img)
+	file = null
 
-	var dir := Directory.new()
-	dir.open("res://")
+	var dir := DirAccess.open("res://")
 	dir.remove(data_path)
 	dir.remove(sheet_path)
 
@@ -147,13 +144,12 @@ func get_aseprite_command() -> String:
 			locations.append("C:/Program Files (x86)/Aseprite/Aseprite.exe")
 			locations.append("C:/Program Files/Aseprite/Aseprite.exe")
 			locations.append("C:/Program Files (x86)/Steam/steamapps/common/Aseprite/Aseprite.exe")
-		"iOS":
+		"macOS":
 			locations.append("/Applications/Aseprite.app/Contents/MacOS/aseprite")
 			locations.append("~/Library/ApplicationSupport/Steam/steamapps/common/Aseprite/Aseprite.app/Contents/MacOS/aseprite")
 
-	var file = File.new()
 	for location in locations:
-		if file.file_exists(location):
+		if FileAccess.file_exists(location):
 			return location
 
 	var ending := ""
@@ -167,7 +163,7 @@ func get_aseprite_command() -> String:
 		if location.length() == 0:
 			continue
 		location += "/Aseprite" + ending
-		if file.file_exists(location):
+		if FileAccess.file_exists(location):
 			return location
 	push_error("could not find aseprite in system path or " + JSON.new().stringify(locations))
 	return ""
